@@ -1,63 +1,153 @@
 import streamlit as st
 import requests
 
+
+# ============================================================
+# PAGE
+# ============================================================
+
 st.set_page_config(
     page_title="ParcelPilot AI Support",
-    page_icon="📦"
+    page_icon="📦",
+    layout="centered",
 )
 
 st.title("📦 ParcelPilot AI Support")
 st.caption("AI-powered customer support agent")
 
-# Change this to your Render backend URL before deployment
-API_URL = "https://parcelpilot-ai-nraw.onrender.com/chat"
 
-message = st.text_input(
-    "Ask ParcelPilot",
-    placeholder="Ask about an account, order, ticket, cancellation, etc."
+# ============================================================
+# API
+# ============================================================
+
+API_URL = "http://127.0.0.1:8000/chat"
+
+# ============================================================
+# CHAT HISTORY
+# ============================================================
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+
+for message in st.session_state.messages:
+
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+
+# ============================================================
+# INPUT
+# ============================================================
+
+message = st.chat_input(
+    "Ask about an account, order, ticket, policy, etc."
 )
 
-if st.button("Send", type="primary"):
 
-    if not message.strip():
-        st.warning("Please enter a message.")
-    else:
-        try:
+# ============================================================
+# SEND
+# ============================================================
+
+if message:
+
+    st.session_state.messages.append(
+        {
+            "role": "user",
+            "content": message,
+        }
+    )
+
+    with st.chat_message("user"):
+        st.markdown(message)
+
+    try:
+
+        with st.chat_message("assistant"):
+
             with st.spinner("Agent is thinking..."):
 
                 response = requests.post(
                     API_URL,
-                    json={"message": message},
-                    timeout=120
+                    json={
+                        "message": message,
+                    },
+                    timeout=120,
                 )
 
             if response.status_code == 200:
 
                 data = response.json()
 
-                st.markdown("### 🤖 Agent")
+                answer = data.get(
+                    "message",
+                    "No response received.",
+                )
 
-                st.markdown(
-                    data.get(
-                        "message",
-                        "No response received."
-                    )
+                st.markdown(answer)
+
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": answer,
+                    }
                 )
 
             else:
-                st.error(
+
+                error_message = (
                     f"API Error {response.status_code}: "
                     f"{response.text}"
                 )
 
-        except requests.exceptions.Timeout:
-            st.error("The agent took too long to respond.")
+                st.error(error_message)
 
-        except requests.exceptions.ConnectionError:
-            st.error(
-                "Cannot connect to the ParcelPilot API. "
-                "Please check that the Render backend is running."
-            )
+    except requests.exceptions.Timeout:
 
-        except Exception as e:
-            st.error(f"Error: {e}")
+        st.error(
+            "The agent took too long to respond."
+        )
+
+    except requests.exceptions.ConnectionError:
+
+        st.error(
+            "Cannot connect to the ParcelPilot API. "
+            "Please check that the Render backend is running."
+        )
+
+    except Exception as error:
+
+        st.error(
+            f"Error: {error}"
+        )
+
+
+# ============================================================
+# SIDEBAR
+# ============================================================
+
+with st.sidebar:
+
+    st.header("ParcelPilot")
+
+    st.write(
+        "Ask questions about:"
+    )
+
+    st.write(
+        """
+        - Customer accounts
+        - Orders
+        - Support tickets
+        - Cancellation policies
+        - Customer agreements
+        - Service credits
+        - Escalations
+        """
+    )
+
+    if st.button("Clear Chat"):
+
+        st.session_state.messages = []
+
+        st.rerun()
