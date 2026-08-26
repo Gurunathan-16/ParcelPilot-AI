@@ -8,3 +8,4 @@ openpyxl
 pypdf
 chromadb
 pydantic
+groq
