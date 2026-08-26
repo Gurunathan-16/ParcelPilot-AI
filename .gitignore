@@ -1,0 +1,13 @@
+@"
+.env
+.env.*
+!.env.example
+venv/
+__pycache__/
+*.py[cod]
+"@ | Set-Content .gitignore
+.env
+.env.*
+!.env.example
+venv/
+__pycache__/

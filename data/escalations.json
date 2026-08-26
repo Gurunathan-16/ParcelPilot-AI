@@ -1,0 +1,10 @@
+[
+  {
+    "escalation_id": "ESC-0001",
+    "account_id": "ACCT-001",
+    "ticket_id": null,
+    "reason": "User requested support escalation.",
+    "status": "OPEN",
+    "created_at": "2026-08-25T18:19:27.695023"
+  }
+]
