@@ -10,6 +10,12 @@ app = FastAPI()
 class ChatRequest(BaseModel):
     message: str
 
+@app.get("/")
+def root():
+    return {
+        "name": "ParcelPilot AI Support API",
+        "status": "running"
+    }
 
 @app.get("/health")
 def health():
