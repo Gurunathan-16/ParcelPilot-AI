@@ -9,11 +9,12 @@ st.set_page_config(
 st.title("📦 ParcelPilot AI Support")
 st.caption("AI-powered customer support agent")
 
-API_URL = "http://127.0.0.1:8000/chat"
+# Change this to your Render backend URL before deployment
+API_URL = "https://parcelpilot-ai-nraw.onrender.com/chat"
 
 message = st.text_input(
     "Ask ParcelPilot",
-    placeholder="Hello nice to meet you ?"
+    placeholder="Ask about an account, order, ticket, cancellation, etc."
 )
 
 if st.button("Send", type="primary"):
@@ -22,19 +23,26 @@ if st.button("Send", type="primary"):
         st.warning("Please enter a message.")
     else:
         try:
-            response = requests.post(
-                API_URL,
-                json={"message": message},
-                timeout=120
-            )
+            with st.spinner("Agent is thinking..."):
+
+                response = requests.post(
+                    API_URL,
+                    json={"message": message},
+                    timeout=120
+                )
 
             if response.status_code == 200:
+
                 data = response.json()
 
                 st.markdown("### 🤖 Agent")
 
-                # Your FastAPI currently returns "message"
-                st.markdown(data.get("message", "No response received."))
+                st.markdown(
+                    data.get(
+                        "message",
+                        "No response received."
+                    )
+                )
 
             else:
                 st.error(
@@ -42,10 +50,13 @@ if st.button("Send", type="primary"):
                     f"{response.text}"
                 )
 
+        except requests.exceptions.Timeout:
+            st.error("The agent took too long to respond.")
+
         except requests.exceptions.ConnectionError:
             st.error(
-                "Cannot connect to FastAPI. "
-                "Make sure Uvicorn is running on port 8000."
+                "Cannot connect to the ParcelPilot API. "
+                "Please check that the Render backend is running."
             )
 
         except Exception as e:
