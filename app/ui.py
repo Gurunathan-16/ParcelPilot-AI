@@ -13,7 +13,7 @@ API_URL = "http://127.0.0.1:8000/chat"
 
 message = st.text_input(
     "Ask ParcelPilot",
-    placeholder="What is the account ID for Northstar Logistics?"
+    placeholder="Hello nice to meet you ?"
 )
 
 if st.button("Send", type="primary"):
