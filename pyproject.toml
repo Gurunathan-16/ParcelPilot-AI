@@ -3,7 +3,6 @@ name = "parcelpilot-ai"
 version = "0.1.0"
 description = "ParcelPilot AI Support Agent"
 requires-python = ">=3.13"
-
 dependencies = [
     "fastapi",
 ]
