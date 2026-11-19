@@ -21,6 +21,7 @@ st.caption("AI-powered customer support agent")
 # ============================================================
 
 API_URL = "http://127.0.0.1:8000/chat"
+#API_URL = "https://parcelpilot-ai-nraw.onrender.com/chat"
 
 # ============================================================
 # CHAT HISTORY
