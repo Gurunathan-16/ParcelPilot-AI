@@ -1,6 +1,5 @@
 import os
 from typing import Optional
-from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -8,8 +7,6 @@ from workers import asgi
 from app.main import app
 
 Default = asgi.entrypoint(app)
-
-load_dotenv()
 
 app = FastAPI(
     title="ParcelPilot AI",
