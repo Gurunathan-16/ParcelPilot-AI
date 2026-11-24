@@ -1,8 +1,6 @@
 import os
 from typing import Optional
 
-import httpx
-
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
