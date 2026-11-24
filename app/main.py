@@ -1,18 +1,18 @@
 import os
 from typing import Optional
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from workers import asgi
-from app.main import app
 
-Default = asgi.entrypoint(app)
 
 app = FastAPI(
     title="ParcelPilot AI",
-    description="AI-powered parcel support and RAG API",
+    description="AI-powered parcel support API",
     version="1.0.0",
 )
+
 
 # --------------------------------------------------
 # CORS
@@ -37,7 +37,7 @@ class ChatRequest(BaseModel):
 
 
 # --------------------------------------------------
-# Health Check
+# Health
 # --------------------------------------------------
 
 @app.get("/")
@@ -57,8 +57,21 @@ def health():
     }
 
 
+@app.get("/v1/status")
+def status():
+    return {
+        "application": "ParcelPilot AI",
+        "api": "FastAPI",
+        "status": "online",
+        "environment": os.getenv(
+            "ENVIRONMENT",
+            "development"
+        ),
+    }
+
+
 # --------------------------------------------------
-# Basic Chat Endpoint
+# Temporary Chat Test
 # --------------------------------------------------
 
 @app.post("/v1/chat")
@@ -72,30 +85,17 @@ def chat(request: ChatRequest):
             detail="Question cannot be empty."
         )
 
-    # Temporary response.
-    # We will reconnect your ChromaDB + Gemini RAG pipeline here.
     return {
         "success": True,
         "question": question,
-        "answer": (
-            "ParcelPilot AI backend is working. "
-            "The RAG and Gemini pipeline can now be connected."
-        ),
+        "answer": "ParcelPilot AI API is working.",
         "session_id": request.session_id,
         "sources": [],
     }
 
 
 # --------------------------------------------------
-# API Status
+# Cloudflare Python Worker
 # --------------------------------------------------
 
-@app.get("/v1/status")
-def status():
-
-    return {
-        "application": "ParcelPilot AI",
-        "api": "FastAPI",
-        "status": "online",
-        "environment": os.getenv("ENVIRONMENT", "development"),
-    }
+Default = asgi.entrypoint(app)
