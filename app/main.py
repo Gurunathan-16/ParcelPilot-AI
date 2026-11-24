@@ -1,7 +1,9 @@
 import os
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException
+import httpx
+
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from workers import asgi
@@ -55,6 +57,33 @@ def health():
         "status": "healthy",
         "service": "parcelpilot-api",
     }
+
+# --------------------------------------------------
+# D1 DATABASE CONNECTION TEST
+# --------------------------------------------------
+
+@app.get("/v1/db/health")
+async def db_health(request: Request):
+
+    try:
+        env = request.scope["env"]
+        db = env.DB
+
+        await db.prepare(
+            "SELECT 1 AS connection_test"
+        ).run()
+
+        return {
+            "success": True,
+            "database": "parcelpilot-db",
+            "status": "connected"
+        }
+
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"D1 connection failed: {type(error).__name__}: {error}"
+        )
 
 
 @app.get("/v1/status")
