@@ -57,8 +57,13 @@ def health():
         "service": "parcelpilot-api",
     }
 
+# --------------------------------------------------
+# D1 DATABASE CONNECTION TEST
+# --------------------------------------------------
+
 @app.get("/v1/db/health")
 async def db_health(request: Request):
+
     try:
         env = request.scope["env"]
         db = env.DB
@@ -122,10 +127,4 @@ def chat(request: ChatRequest):
 # Cloudflare Python Worker
 # --------------------------------------------------
 
-class Default(WorkerEntrypoint):
-    async def fetch(self, request):
-        return await asgi.fetch(
-            app,
-            request.js_object,
-            self.env
-        )
+Default = asgi.entrypoint(app)
