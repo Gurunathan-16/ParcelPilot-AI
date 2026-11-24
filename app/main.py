@@ -1,11 +1,12 @@
 import os
 from typing import Optional
 
+import httpx
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from workers import asgi
-
+from workers import WorkerEntrypoint, asgi
 
 app = FastAPI(
     title="ParcelPilot AI",
@@ -56,6 +57,29 @@ def health():
         "service": "parcelpilot-api",
     }
 
+@app.get("/v1/db/health")
+async def db_health(request: Request):
+    try:
+        env = request.scope["env"]
+        db = env.DB
+
+        result = await db.prepare(
+            "SELECT 1 AS connection_test"
+        ).run()
+
+        return {
+            "success": True,
+            "database": "parcelpilot-db",
+            "status": "connected",
+            "result": result
+        }
+
+    except Exception as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"D1 connection failed: {type(error).__name__}: {error}"
+        )
+
 
 @app.get("/v1/status")
 def status():
@@ -98,4 +122,10 @@ def chat(request: ChatRequest):
 # Cloudflare Python Worker
 # --------------------------------------------------
 
-Default = asgi.entrypoint(app)
+class Default(WorkerEntrypoint):
+    async def fetch(self, request):
+        return await asgi.fetch(
+            app,
+            request.js_object,
+            self.env
+        )
